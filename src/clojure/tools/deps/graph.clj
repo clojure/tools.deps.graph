@@ -88,6 +88,7 @@
 
 (defn output-trace
   [trace output]
+  (println "Writing" (count trace) "trace images")
   (loop [[step & steps] trace
          stmts [[:root {:label "deps.edn"
                         :shape :box
@@ -98,14 +99,16 @@
       (let [{:keys [lib coord use-coord path include reason vmap]} step
             nx (symbol (namespace lib) (str (name lib) "-CONSIDER"))
             dependee-id (if-let [parent (last path)] (node-id parent) :root)
-            nx-stmts [(make-dep-node nx use-coord {:xlabel reason, :fillcolor (if include :green2 :brown1)})
-                      [dependee-id (node-id nx)]]]
+            nx-stmts [(make-dep-node nx use-coord {:fillcolor (if include :green2 :brown1)})
+                      [dependee-id (node-id nx) {:label reason}]]]
+        (print ".") (flush)
         (-> (dot/digraph (concat [{:rankdir :LR, :splines :polyline}] (into stmts nx-stmts)))
           dot/dot
           (dotjvm/save! (str output i ".png") {:format :png}))
         (recur steps
           (if include (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]]) stmts)
-          (inc i))))))
+          (inc i)))
+      (println))))
 
 (defn run
   [{:keys [deps trace tracefile output aliases] :as opts}]
