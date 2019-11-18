@@ -24,7 +24,6 @@
   Ex: (parse-libs \"org.clojure/clojure,org.clojure/test.check\")
   Returns: [org.clojure/clojure org.clojure/test.check]"
   [s]
-  (println "ps" s)
   (->> (str/split (or s "") #",")
     (remove str/blank?)
     (map symbol)))
@@ -103,10 +102,9 @@
   [trace output trace-omit]
   (let [omitted-libs (set trace-omit)
         trace' (remove (fn [{:keys [lib include]}]
-                         (println lib include (and (not include) (contains? omitted-libs lib)))
                          (and (not include) (contains? omitted-libs lib)))
                  trace)]
-    (println "Writing" (count trace') "trace images, omitted" (- (count trace) (count trace')) "frames")
+    (println "Writing" (inc (count trace')) "trace images, omitted" (inc (- (count trace) (count trace'))) "frames")
     (loop [[step & steps] trace'
            stmts [[:root {:label "deps.edn"
                           :shape :box
@@ -126,7 +124,11 @@
           (recur steps
             (if include (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]]) stmts)
             (inc i)))
-        (println)))))
+        (do
+          (println)
+          (-> (dot/digraph (concat [{:rankdir :LR, :splines :polyline}] stmts))
+            dot/dot
+            (dotjvm/save! (str output i ".png") {:format :png})))))))
 
 (defn run
   [{:keys [deps trace tracefile output aliases trace-omit] :as opts}]
