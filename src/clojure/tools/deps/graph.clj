@@ -118,12 +118,13 @@
       (let [tf (jio/file tracefile)]
         (if (.exists tf)
           (output-trace (-> tf slurp edn/read-string :log) output)
-          (throw (ex-info (str "Trace file " tracefile " does not exist" nil))))))
-    (do
+          (throw (ex-info (str "Trace file does not exist: " tracefile) {})))))
+    (let [project-dep-loc (jio/file (or deps "deps.edn"))]
+      (when (and deps (not (.exists project-dep-loc)))
+        (throw (ex-info (str "Deps file does not exist: " deps) {})))
       (let [install-deps (reader/install-deps)
             user-dep-loc (jio/file (reader/user-deps-location))
             user-deps (when (.exists user-dep-loc) (reader/slurp-deps user-dep-loc))
-            project-dep-loc (jio/file (or deps "deps.edn"))
             project-deps (when (.exists project-dep-loc) (reader/slurp-deps project-dep-loc))
             deps-map (->> [install-deps user-deps project-deps] (remove nil?) reader/merge-deps)]
         (makecp/check-aliases deps-map aliases)
@@ -156,7 +157,7 @@
       (run options)
       (shutdown-agents))
     (catch Throwable t
-      (printerrln "Error building classpath." (.getMessage t))
+      (printerrln (.getMessage t))
       (when-not (instance? IExceptionInfo t)
         (.printStackTrace t))
       (System/exit 1))))
