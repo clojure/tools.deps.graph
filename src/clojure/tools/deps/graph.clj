@@ -19,6 +19,16 @@
 
 (set! *warn-on-reflection* true)
 
+(defn parse-syms
+  "Parses a concatenated string of libs into a collection of symbols
+  Ex: (parse-libs \"org.clojure/clojure,org.clojure/test.check\")
+  Returns: [org.clojure/clojure org.clojure/test.check]"
+  [s]
+  (println "ps" s)
+  (->> (str/split (or s "") #",")
+    (remove str/blank?)
+    (map symbol)))
+
 ;; Examples:
 ;;   no opts - read deps.edn, expand, and show deps image in viewer
 ;;   -o deps.png - read deps.edn, expand, and output deps image to deps.png
@@ -35,7 +45,10 @@
    ["-f" "--tracefile TRACEFILE" "Read trace directly from file, output one image per trace step"]
    ;; options
    ["-o" "--output FILE" "Save output file (or files if trace), don't show"]
-   ["-a" "--aliases ALIASES" "Concatenated alias names to enable" :parse-fn parse/parse-kws]])
+   ["-a" "--aliases ALIASES" "Concatenated alias names to enable" :parse-fn parse/parse-kws]
+   [nil "--trace-omit LIBS" "Comma delimited list of libs to omit in trace imgs"
+    :default '[org.clojure/clojure]
+    :parse-fn parse-syms]])
 
 (defn parse-opts
   "Parse the command line opts to make-classpath"
@@ -87,37 +100,42 @@
         (dotjvm/show! d)))))
 
 (defn output-trace
-  [trace output]
-  (println "Writing" (count trace) "trace images")
-  (loop [[step & steps] trace
-         stmts [[:root {:label "deps.edn"
-                        :shape :box
-                        :fillcolor :cadetblue1
-                        :style :filled}]]
-         i 100]
-    (if step
-      (let [{:keys [lib coord use-coord path include reason vmap]} step
-            nx (symbol (namespace lib) (str (name lib) "-CONSIDER"))
-            dependee-id (if-let [parent (last path)] (node-id parent) :root)
-            nx-stmts [(make-dep-node nx use-coord {:fillcolor (if include :green2 :brown1)})
-                      [dependee-id (node-id nx) {:label reason}]]]
-        (print ".") (flush)
-        (-> (dot/digraph (concat [{:rankdir :LR, :splines :polyline}] (into stmts nx-stmts)))
-          dot/dot
-          (dotjvm/save! (str output i ".png") {:format :png}))
-        (recur steps
-          (if include (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]]) stmts)
-          (inc i)))
-      (println))))
+  [trace output trace-omit]
+  (let [omitted-libs (set trace-omit)
+        trace' (remove (fn [{:keys [lib include]}]
+                         (println lib include (and (not include) (contains? omitted-libs lib)))
+                         (and (not include) (contains? omitted-libs lib)))
+                 trace)]
+    (println "Writing" (count trace') "trace images, omitted" (- (count trace) (count trace')) "frames")
+    (loop [[step & steps] trace'
+           stmts [[:root {:label "deps.edn"
+                          :shape :box
+                          :fillcolor :cadetblue1
+                          :style :filled}]]
+           i 100]
+      (if step
+        (let [{:keys [lib coord use-coord path include reason vmap]} step
+              nx (symbol (namespace lib) (str (name lib) "-CONSIDER"))
+              dependee-id (if-let [parent (last path)] (node-id parent) :root)
+              nx-stmts [(make-dep-node nx use-coord {:fillcolor (if include :green2 :brown1)})
+                        [dependee-id (node-id nx) {:label reason}]]]
+          (print ".") (flush)
+          (-> (dot/digraph (concat [{:rankdir :LR, :splines :polyline}] (into stmts nx-stmts)))
+            dot/dot
+            (dotjvm/save! (str output i ".png") {:format :png}))
+          (recur steps
+            (if include (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]]) stmts)
+            (inc i)))
+        (println)))))
 
 (defn run
-  [{:keys [deps trace tracefile output aliases] :as opts}]
+  [{:keys [deps trace tracefile output aliases trace-omit] :as opts}]
   (if tracefile
     (do
       (when-not output (throw (ex-info "-o must specify output file name in trace mode" nil)))
       (let [tf (jio/file tracefile)]
         (if (.exists tf)
-          (output-trace (-> tf slurp edn/read-string :log) output)
+          (output-trace (-> tf slurp edn/read-string :log) output trace-omit)
           (throw (ex-info (str "Trace file does not exist: " tracefile) {})))))
     (let [project-dep-loc (jio/file (or deps "deps.edn"))]
       (when (and deps (not (.exists project-dep-loc)))
@@ -135,7 +153,7 @@
               resolve-args (assoc resolve-args :verbose true)
               lib-map (session/with-session (deps/resolve-deps deps-map' resolve-args {:trace trace}))]
           (if trace
-            (output-trace (-> lib-map meta :trace :log) output)
+            (output-trace (-> lib-map meta :trace :log) output trace-omit)
             (make-graph lib-map output)))))))
 
 (defn -main
@@ -147,7 +165,8 @@
     -t - Trace mode, will output one image per expansion step
     -f TRACEFILE - Trace file mode - read trace file, don't use deps.edn file
     -o FILE - Output file, in trace mode required and will create N images
-    -a - Concatenated alias names when reading deps file"
+    -a - Concatenated alias names when reading deps file
+    --trace-omit - Comma-delimited list of libs to skip in trace images"
   [& args]
   (try
     (let [{:keys [options errors]} (parse-opts args)]
