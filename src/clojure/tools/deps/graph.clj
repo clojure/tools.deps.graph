@@ -1,9 +1,11 @@
 (ns clojure.tools.deps.graph
   (:require
+    [clojure.edn :as edn]
     [clojure.java.io :as jio]
     [clojure.string :as str]
     [clojure.tools.cli :as cli]
     [clojure.tools.deps.alpha :as deps]
+    [clojure.tools.deps.alpha.extensions :as ext]
     [clojure.tools.deps.alpha.reader :as reader]
     [clojure.tools.deps.alpha.script.parse :as parse]
     [clojure.tools.deps.alpha.script.make-classpath2 :as makecp]
@@ -15,10 +17,25 @@
   (:import
     [clojure.lang IExceptionInfo]))
 
+(set! *warn-on-reflection* true)
+
+;; Examples:
+;;   no opts - read deps.edn, expand, and show deps image in viewer
+;;   -o deps.png - read deps.edn, expand, and output deps image to deps.png
+;;   -d mydeps.edn -o mydeps.png - read mydeps.edn, expand, and output deps image to mydeps.png
+;;   -t -o trace.png - read deps.edn, trace expansion, output trace-100.png, ...
+;;   -d mydeps.edn -t -o trace.png - read mydeps.edn, trace, output trace-100.png, ...
+;;   -f trace.edn -o trace.png - read trace file, output trace-100.png, ...
+
 (def ^:private opts
-  [;; aliases
-   ["-R" "--resolve-aliases ALIASES" "Concatenated resolve-deps alias names" :parse-fn parse/parse-kws]
-   ["-A" "--aliases ALIASES" "Concatenated generic alias names" :parse-fn parse/parse-kws]])
+  [;; input
+   ["-d" "--deps DEPSFILE" "deps.edn file to read, default ./deps.edn" :default "deps.edn"]
+   ;; trace mode
+   ["-t" "--trace" "Trace mode, output one image per trace step"]
+   ["-f" "--tracefile TRACEFILE" "Read trace directly from file, output one image per trace step"]
+   ;; options
+   ["-o" "--output FILE" "Save output file (or files if trace), don't show"]
+   ["-a" "--aliases ALIASES" "Concatenated alias names to enable" :parse-fn parse/parse-kws]])
 
 (defn parse-opts
   "Parse the command line opts to make-classpath"
@@ -33,21 +50,21 @@
     (keyword lib)))
 
 (defn make-node
-  [lib {:keys [mvn/version git/url sha deps/manifest local/root] :as coord}]
+  [id rows style-attrs]
+  [id (merge {:shape :record
+              :label (str/join "|" rows)
+              :style :filled
+              :color :black
+              :fillcolor :lightgrey}
+        style-attrs)])
+
+(defn make-dep-node
+  [lib coord style-attrs]
   (let [id (node-id lib)
-        node-name (if (= (ns lib) (name lib)) (str (ns lib)) (str lib))
-        label (str/join "|" (into [node-name]
-                              (cond
-                                version [version]
-                                url [url (subs sha 0 7)]
-                                root [root]
-                                :else [])))
-        node [id {:label label
-                  :style :filled
-                  :color :black
-                  :fillcolor :lightgrey
-                  :shape :record}]]
-    node))
+        summary (ext/coord-summary lib coord)
+        space (str/index-of summary " ")
+        rows [(subs summary 0 space) (subs summary (inc space))]]
+    (make-node id rows style-attrs)))
 
 (defn make-edges
   [lib {:keys [dependents] :as coord}]
@@ -56,60 +73,87 @@
     [[:root (node-id lib)]]))
 
 (defn make-graph
-  [lib-map]
-  (let [statements (mapcat
-                     (fn [[lib coord]]
-                       (into [[:root {:label "deps.edn"
-                                      :shape :box
-                                      :fillcolor :cadetblue1
-                                      :style :filled}]
-                              (make-node lib coord)]
-                         (make-edges lib coord)))
-                     lib-map)]
+  [lib-map output]
+  (let [statements (into [(make-node :root ["deps.edn"] {:shape :box :fillcolor :cadetblue1}) ]
+                     (mapcat
+                       (fn [[lib coord]]
+                         (into [(make-dep-node lib coord nil)]
+                           (make-edges lib coord)))
+                       lib-map))]
     ;(clojure.pprint/pprint statements)
-    (-> (dot/digraph (concat [{:rankdir :LR
-                               :splines :polyline}]
-                       statements))
-      dot/dot
-      dotjvm/show!
-      ;(dotjvm/save! "out.png" {:format :png})
-      )))
+    (let [d (dot/dot (dot/digraph (concat [{:rankdir :LR, :splines :polyline}] statements)))]
+      (if output
+        (dotjvm/save! d output {:format :png})
+        (dotjvm/show! d)))))
+
+(defn output-trace
+  [trace output]
+  (loop [[step & steps] trace
+         stmts [[:root {:label "deps.edn"
+                        :shape :box
+                        :fillcolor :cadetblue1
+                        :style :filled}]]
+         i 100]
+    (if step
+      (let [{:keys [lib coord use-coord path include reason vmap]} step
+            nx (symbol (namespace lib) (str (name lib) "-CONSIDER"))
+            dependee-id (if-let [parent (last path)] (node-id parent) :root)
+            nx-stmts [(make-dep-node nx use-coord {:xlabel reason, :fillcolor (if include :green2 :brown1)})
+                      [dependee-id (node-id nx)]]]
+        (-> (dot/digraph (concat [{:rankdir :LR, :splines :polyline}] (into stmts nx-stmts)))
+          dot/dot
+          (dotjvm/save! (str output i ".png") {:format :png}))
+        (recur steps
+          (if include (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]]) stmts)
+          (inc i))))))
 
 (defn run
-  [{:keys [resolve-aliases aliases] :as opts}]
-  (let [install-deps (reader/install-deps)
-        user-dep-loc (jio/file (reader/user-deps-location))
-        user-deps (when (.exists user-dep-loc) (reader/slurp-deps user-dep-loc))
-        project-dep-loc (jio/file "deps.edn")
-        project-deps (when (.exists project-dep-loc) (reader/slurp-deps project-dep-loc))
-        deps-map (->> [install-deps user-deps project-deps] (remove nil?) reader/merge-deps)
-        active-aliases (concat resolve-aliases aliases)]
-    (makecp/check-aliases deps-map active-aliases)
-    (let [deps-map' (if-let [replace-deps (get (deps/combine-aliases deps-map aliases) :deps)]
-                      (->> [install-deps user-deps project-deps {:deps replace-deps}] (remove nil?) reader/merge-deps)
-                      deps-map)
-          resolve-args (deps/combine-aliases deps-map' active-aliases)
-          lib-map (session/with-session (deps/resolve-deps deps-map' resolve-args))]
-      (make-graph lib-map))))
+  [{:keys [deps trace tracefile output aliases] :as opts}]
+  (if tracefile
+    (do
+      (when-not output (throw (ex-info "-o must specify output file name in trace mode" nil)))
+      (let [tf (jio/file tracefile)]
+        (if (.exists tf)
+          (output-trace (-> tf slurp edn/read-string :log) output)
+          (throw (ex-info (str "Trace file " tracefile " does not exist" nil))))))
+    (do
+      (let [install-deps (reader/install-deps)
+            user-dep-loc (jio/file (reader/user-deps-location))
+            user-deps (when (.exists user-dep-loc) (reader/slurp-deps user-dep-loc))
+            project-dep-loc (jio/file (or deps "deps.edn"))
+            project-deps (when (.exists project-dep-loc) (reader/slurp-deps project-dep-loc))
+            deps-map (->> [install-deps user-deps project-deps] (remove nil?) reader/merge-deps)]
+        (makecp/check-aliases deps-map aliases)
+        (let [deps-map' (if-let [replace-deps (get (deps/combine-aliases deps-map aliases) :deps)]
+                          (->> [install-deps user-deps project-deps {:deps replace-deps}] (remove nil?) reader/merge-deps)
+                          deps-map)
+              resolve-args (deps/combine-aliases deps-map' aliases)
+              resolve-args (assoc resolve-args :verbose true)
+              lib-map (session/with-session (deps/resolve-deps deps-map' resolve-args {:trace trace}))]
+          (if trace
+            (output-trace (-> lib-map meta :trace :log) output)
+            (make-graph lib-map output)))))))
 
 (defn -main
-  "Main entry point for make-classpath script.
+  "Create deps graphs. By default, reads deps.edn in current directory, creates deps graph,
+  and shows using a viewer. Use ctrl-c to exit.
 
   Options:
-    -Rresolve-aliases - concatenated resolve-deps alias names
-    -Aaliases - concatenated generic alias names
-
-  Resolves the dependencies, creates the lib map, then produces a graphviz diagram."
+    -d DEPSFILE - deps.edn filee to read, default=deps.edn
+    -t - Trace mode, will output one image per expansion step
+    -f TRACEFILE - Trace file mode - read trace file, don't use deps.edn file
+    -o FILE - Output file, in trace mode required and will create N images
+    -a - Concatenated alias names when reading deps file"
   [& args]
   (try
     (let [{:keys [options errors]} (parse-opts args)]
       (when (seq errors)
         (run! println errors)
         (System/exit 1))
-      (run options))
+      (run options)
+      (shutdown-agents))
     (catch Throwable t
       (printerrln "Error building classpath." (.getMessage t))
       (when-not (instance? IExceptionInfo t)
         (.printStackTrace t))
       (System/exit 1))))
-
