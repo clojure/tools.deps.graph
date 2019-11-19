@@ -122,7 +122,26 @@
             dot/dot
             (dotjvm/save! (str output i ".png") {:format :png}))
           (recur steps
-            (if include (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]]) stmts)
+            (case reason
+              ;; add new node and link from parent to it
+              (:new-top-dep :new-dep)
+              (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]])
+
+              ;; add new node and remove previous node, link from parent to it
+              :newer-version
+              ;; todo: remove edges to dependents of old version
+              ;; todo: remove then orphaned deps?
+              (into (remove (fn [[id b]] (and (= id (node-id lib)) (not (keyword? b)))) stmts)
+                [(make-dep-node lib use-coord nil)
+                 [dependee-id (node-id lib)]])
+
+              ;; just link to existing node
+              (:same-version :old-version :use-top)
+              (into stmts [[dependee-id (node-id lib)]])
+
+              ;; no change
+              ;; (:excluded :parent-omitted)
+              stmts)
             (inc i)))
         (do
           (println)
