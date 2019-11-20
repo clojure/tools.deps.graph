@@ -182,7 +182,7 @@
   and shows using a viewer. Use ctrl-c to exit.
 
   Options:
-    -d DEPSFILE - deps.edn filee to read, default=deps.edn
+    -d DEPSFILE - deps.edn file to read, default=deps.edn
     -t - Trace mode, will output one image per expansion step
     -f TRACEFILE - Trace file mode - read trace file, don't use deps.edn file
     -o FILE - Output file, in trace mode required and will create N images

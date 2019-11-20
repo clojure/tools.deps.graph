@@ -1,4 +1,4 @@
-{:paths ["src"]
+{:paths ["src/main/clojure"]
  :deps
  {org.clojure/tools.deps.alpha {:mvn/version "0.8.591"}
   org.clojure/tools.cli {:mvn/version "0.4.2"}
