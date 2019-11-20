@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>tools.deps.graph</artifactId>
+  <version>0.1.5-SNAPSHOT</version>
+  <name>tools.deps.graph</name>
+
+  <parent>
+    <groupId>org.clojure</groupId>
+    <artifactId>pom.contrib</artifactId>
+    <version>0.2.2</version>
+  </parent>
+
+  <developers>
+    <developer>
+      <id>puredanger</id>
+      <name>Alex Miller</name>
+    </developer>
+  </developers>
+
+  <properties>
+    <!-- used for build -->
+    <clojure.warnOnReflection>true</clojure.warnOnReflection>
+    <clojure.version>1.9.0</clojure.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>clojure</artifactId>
+      <version>${clojure.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>tools.cli</artifactId>
+      <version>0.4.2</version>
+    </dependency>
+    <dependency>
+      <groupId>dorothy</groupId>
+      <artifactId>dorothy</artifactId>
+      <version>0.0.7</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+      <!-- By default, compile everything as a sanity check, but do
+           not include any AOT-compiled .class files in the
+           JAR. Projects may override as needed. -->
+      <groupId>com.theoryinpractise</groupId>
+      <artifactId>clojure-maven-plugin</artifactId>
+      <version>1.7.1</version>
+      <extensions>true</extensions>
+      <configuration>
+        <warnOnReflection>${clojure.warnOnReflection}</warnOnReflection>
+        <temporaryOutputDirectory>true</temporaryOutputDirectory>
+      </configuration>
+      <executions>
+        <execution>
+          <id>clojure-compile</id>
+          <phase>none</phase>
+        </execution>
+        <execution>
+          <id>clojure-test</id>
+          <phase>test</phase>
+          <goals>
+            <goal>test</goal>
+          </goals>
+        </execution>
+      </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <scm>
+    <connection>scm:git:git@github.com:clojure/tools.deps.graph.git</connection>
+    <developerConnection>scm:git:git@github.com:clojure/tools.deps.graph.git</developerConnection>
+    <url>git@github.com:clojure/tools.deps.graph.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <repositories>
+    <repository>
+      <id>clojars</id>
+      <url>https://clojars.org/repo/</url>
+    </repository>
+  </repositories>
+</project>
