@@ -3,6 +3,8 @@ tools.deps.graph
 
 A tool for making deps.edn dependency graphs.
 
+![Deps](deps.png)
+
 # Usage
 
 Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available in any project:
