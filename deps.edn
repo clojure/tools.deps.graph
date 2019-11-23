@@ -1,6 +1,6 @@
 {:paths ["src/main/clojure"]
  :deps
- {org.clojure/tools.deps.alpha {:mvn/version "0.8.591"}
+ {org.clojure/tools.deps.alpha {:mvn/version "0.8.599"}
   org.clojure/tools.cli {:mvn/version "0.4.2"}
   dorothy/dorothy {:mvn/version "0.0.7"}
   org.slf4j/slf4j-nop {:mvn/version "1.7.25"}}}
