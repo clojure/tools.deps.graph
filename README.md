@@ -7,6 +7,8 @@ A tool for making deps.edn dependency graphs.
 
 # Usage
 
+First, make sure you have [Graphviz](https://www.graphviz.org/download/) installed.
+
 Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available in any project:
 
 ```clojure
