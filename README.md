@@ -5,6 +5,10 @@ A tool for making deps.edn dependency graphs.
 
 ![Deps](deps.png)
 
+# Requirements
+
+* [Graphviz](https://graphviz.org) installed.
+
 # Usage
 
 Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available in any project:
@@ -12,7 +16,7 @@ Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available i
 ```clojure
 {...
  :aliases
- {:graph {:deps {org.clojure/tools.deps.graph {:mvn/version "0.1.14"}}
+ {:graph {:extra-deps {org.clojure/tools.deps.graph {:mvn/version "0.1.14"}}
           :main-opts ["-m" "clojure.tools.deps.graph"]}}}
 ```
 
