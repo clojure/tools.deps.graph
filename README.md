@@ -5,6 +5,10 @@ A tool for making deps.edn dependency graphs.
 
 ![Deps](deps.png)
 
+# Dependencies
+
+tools.deps.graph uses [Graphviz](https://www.graphviz.org/) to generate images. You can find a list of platform-specific installations at https://graphviz.gitlab.io/download/.
+
 # Usage
 
 Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available in any project:
@@ -88,7 +92,7 @@ org.clojure/tools.deps.graph {:mvn/version "0.1.14"}
 # Developer Information
 
 * [GitHub project](https://github.com/clojure/tools.deps.graph)
-* [How to contribute](https://dev.clojure.org/display/community/Contributing)
+* [How to contribute](https://clojure.org/community/contributing)
 * [Bug Tracker](https://dev.clojure.org/jira/browse/TDEPS)
 * [Continuous Integration](https://build.clojure.org/job/tools.deps.graph/)
 * [Compatibility Test Matrix](https://build.clojure.org/job/tools.deps.graph-test-matrix/)
