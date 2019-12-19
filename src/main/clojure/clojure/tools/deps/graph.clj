@@ -181,7 +181,6 @@
                             (->> [install-deps user-deps project-deps {:deps replace-deps}] (remove nil?) reader/merge-deps)
                             deps-map)
                 resolve-args (deps/combine-aliases deps-map' aliases)
-                resolve-args (assoc resolve-args :verbose true)
                 lib-map (session/with-session (deps/resolve-deps deps-map' resolve-args {:trace trace}))]
             (if trace
               (output-trace (-> lib-map meta :trace :log) output trace-omit)
