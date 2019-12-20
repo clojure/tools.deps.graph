@@ -44,6 +44,7 @@
 ;;   -t -o trace.png - read deps.edn, trace expansion, output trace-100.png, ...
 ;;   -d mydeps.edn -t -o trace.png - read mydeps.edn, trace, output trace-100.png, ...
 ;;   -f trace.edn -o trace.png - read trace file, output trace-100.png, ...
+;;   --size - include sizes in dep graph nodes
 
 (def ^:private opts
   [;; input
@@ -56,7 +57,8 @@
    ["-a" "--aliases ALIASES" "Concatenated alias names to enable" :parse-fn parse/parse-kws]
    [nil "--trace-omit LIBS" "Comma delimited list of libs to omit in trace imgs"
     :default '[org.clojure/clojure]
-    :parse-fn parse-syms]])
+    :parse-fn parse-syms]
+   [nil "--size" "Include sizes in dep graph nodes"]])
 
 (defn parse-opts
   "Parse the command line opts to make-classpath"
@@ -79,12 +81,34 @@
               :fillcolor :lightgrey}
         style-attrs)])
 
+(defn get-size-path
+  [path]
+  (let [f (jio/file path)]
+    (if (.exists f)
+      (if (.isFile f)
+        (.length f)
+        0) ;; TODO: sum dir size?
+      0)))
+
+(defn get-size
+  [lib coord config]
+  (let [{:deps/keys [manifest]} (ext/manifest-type lib coord config)
+        paths (ext/coord-paths lib coord manifest config)]
+    (->> paths (map get-size-path) (reduce +))))
+
 (defn make-dep-node
-  [lib coord style-attrs]
+  [lib coord config opts style-attrs]
   (let [id (node-id lib)
         summary (ext/coord-summary lib coord)
         space (str/index-of summary " ")
-        rows [(subs summary 0 space) (subs summary (inc space))]]
+        rows [(subs summary 0 space)
+              (subs summary (inc space))]
+        rows (if (:size opts)
+               (let [size (get-size lib coord config)]
+                 (if (pos? size)
+                   (conj rows (format "%10.1f kb" (/ size 1024.0)))
+                   rows))
+               rows)]
     (make-node id rows style-attrs)))
 
 (defn make-edges
@@ -94,11 +118,11 @@
     [[:root (node-id lib)]]))
 
 (defn make-graph
-  [lib-map output]
+  [lib-map config output opts]
   (let [statements (into [(make-node :root ["deps.edn"] {:shape :box :fillcolor :cadetblue1}) ]
                      (mapcat
                        (fn [[lib coord]]
-                         (into [(make-dep-node lib coord nil)]
+                         (into [(make-dep-node lib coord config opts nil)]
                            (make-edges lib coord)))
                        lib-map))]
     ;(clojure.pprint/pprint statements)
@@ -108,7 +132,7 @@
         (dotjvm/show! d)))))
 
 (defn output-trace
-  [trace output trace-omit]
+  [trace output config trace-omit]
   (let [omitted-libs (set trace-omit)
         trace' (remove (fn [{:keys [lib include]}]
                          (and (not include) (contains? omitted-libs lib)))
@@ -124,7 +148,7 @@
         (let [{:keys [lib coord use-coord path include reason vmap]} step
               nx (symbol (namespace lib) (str (name lib) "-CONSIDER"))
               dependee-id (if-let [parent (last path)] (node-id parent) :root)
-              nx-stmts [(make-dep-node nx use-coord {:fillcolor (if include :green2 :brown1)})
+              nx-stmts [(make-dep-node nx use-coord config nil {:fillcolor (if include :green2 :brown1)})
                         [dependee-id (node-id nx) {:label reason}]]]
           (print ".") (flush)
           (-> (dot/digraph (concat [{:rankdir :LR, :splines :polyline}] (into stmts nx-stmts)))
@@ -134,14 +158,14 @@
             (case reason
               ;; add new node and link from parent to it
               (:new-top-dep :new-dep)
-              (into stmts [(make-dep-node lib use-coord nil) [dependee-id (node-id lib)]])
+              (into stmts [(make-dep-node lib use-coord config nil nil) [dependee-id (node-id lib)]])
 
               ;; add new node and remove previous node, link from parent to it
               :newer-version
               ;; todo: remove edges to dependents of old version
               ;; todo: remove then orphaned deps?
               (into (remove (fn [[id b]] (and (= id (node-id lib)) (not (keyword? b)))) stmts)
-                [(make-dep-node lib use-coord nil)
+                [(make-dep-node lib use-coord config nil nil)
                  [dependee-id (node-id lib)]])
 
               ;; just link to existing node
@@ -159,14 +183,14 @@
             (dotjvm/save! (str output i ".png") {:format :png})))))))
 
 (defn run
-  [{:keys [deps trace tracefile output aliases trace-omit] :as opts}]
+  [{:keys [deps trace tracefile output aliases trace-omit size] :as opts}]
   (try
     (if tracefile
       (do
         (when-not output (throw (ex-info "-o must specify output file name in trace mode" nil)))
         (let [tf (jio/file tracefile)]
           (if (.exists tf)
-            (output-trace (-> tf slurp edn/read-string :log) output trace-omit)
+            (output-trace (-> tf slurp edn/read-string :log) nil output trace-omit)
             (throw (ex-info (str "Trace file does not exist: " tracefile) {})))))
       (let [project-dep-loc (jio/file (or deps "deps.edn"))]
         (when (and deps (not (.exists project-dep-loc)))
@@ -183,8 +207,8 @@
                 resolve-args (deps/combine-aliases deps-map' aliases)
                 lib-map (session/with-session (deps/resolve-deps deps-map' resolve-args {:trace trace}))]
             (if trace
-              (output-trace (-> lib-map meta :trace :log) output trace-omit)
-              (make-graph lib-map output))))))
+              (output-trace (-> lib-map meta :trace :log) deps-map' output trace-omit)
+              (make-graph lib-map deps-map' output {:size size}))))))
     (catch IOException e
       (if (str/starts-with? (.getMessage e) "Cannot run program")
         (throw (ex-info "tools.deps.graph requires Graphviz (https://graphviz.gitlab.io/download) to be installed to generate graphs." {} e))))))
@@ -199,7 +223,8 @@
     -f TRACEFILE - Trace file mode - read trace file, don't use deps.edn file
     -o FILE - Output file, in trace mode required and will create N images
     -a - Concatenated alias names when reading deps file
-    --trace-omit - Comma-delimited list of libs to skip in trace images"
+    --trace-omit - Comma-delimited list of libs to skip in trace images
+    --size - Include jar size in dep graph nodes"
   [& args]
   (try
     (let [{:keys [options errors]} (parse-opts args)]

@@ -36,6 +36,7 @@ Options:
 * -o FILE - Output file, in trace mode, required and will create N images with this as a prefix
 * -a - Concatenated alias names to enable when reading deps file
 * --trace-omit - Comma-delimited list of libs to skip in trace images"
+* --size- Add jar size info to dep graph"
 
 # Examples
 
@@ -47,6 +48,12 @@ Show dependency graph for current project
 
 ```
 clj -A:graph -o deps.png
+```
+
+Show dependency graph for current project with jar sizes
+
+```
+clj -A:graph -o deps.png --size
 ```
 
 Save dependency graph to deps.png for current project
