@@ -16,7 +16,7 @@ Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available i
 ```clojure
 {...
  :aliases
- {:graph {:deps {org.clojure/tools.deps.graph {:mvn/version "0.1.14"}}
+ {:graph {:deps {org.clojure/tools.deps.graph {:mvn/version "0.2.24"}}
           :main-opts ["-m" "clojure.tools.deps.graph"]}}}
 ```
 
@@ -86,14 +86,14 @@ Read trace.edn file, output trace100.png, ...
 
 # Release Information
 
-Latest release: 0.1.14
+Latest release: 0.2.24
 
 * [All released versions](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.clojure%22%20AND%20a%3A%22tools.deps.graph%22)
 
 [deps.edn](https://clojure.org/guides/deps_and_cli) dependency information:
 
 ```
-org.clojure/tools.deps.graph {:mvn/version "0.1.14"}
+org.clojure/tools.deps.graph {:mvn/version "0.2.24"}
 ```
 
 # Developer Information
