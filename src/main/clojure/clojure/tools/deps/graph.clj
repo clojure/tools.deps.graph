@@ -67,7 +67,6 @@
 
 (defn node-id
   [lib]
-  (keyword lib)
   (if (= (ns lib) (name lib))
     (keyword (ns lib))
     (keyword lib)))
