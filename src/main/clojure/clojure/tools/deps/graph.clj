@@ -160,7 +160,7 @@
               (into stmts [(make-dep-node lib use-coord config nil nil) [dependee-id (node-id lib)]])
 
               ;; add new node and remove previous node, link from parent to it
-              :newer-version
+              (:newer-version :same-version-fewer-exclusions)
               ;; todo: remove edges to dependents of old version
               ;; todo: remove then orphaned deps?
               (into (remove (fn [[id b]] (and (= id (node-id lib)) (not (keyword? b)))) stmts)
