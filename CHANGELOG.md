@@ -1,6 +1,8 @@
 Changelog
 ===========
 
+* 1.0.46 on Jul 17, 2020
+  * Bump tools.deps and undo last change for reason code
 * 1.0.39 on Jul 15, 2020
   * Bump tools.deps and add support for new reason code in trace
 * 0.2.30 on Jan 30, 2020
