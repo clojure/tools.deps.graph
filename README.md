@@ -16,7 +16,7 @@ Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available i
 ```clojure
 {...
  :aliases
- {:graph {:deps {org.clojure/tools.deps.graph {:mvn/version "0.2.30"}}
+ {:graph {:deps {org.clojure/tools.deps.graph {:mvn/version "1.0.39"}}
           :main-opts ["-m" "clojure.tools.deps.graph"]}}}
 ```
 
@@ -88,14 +88,14 @@ Read trace.edn file, output trace100.png, ...
 
 This project follows the version scheme MAJOR.MINOR.COMMITS where MAJOR and MINOR provide some relative indication of the size of the change, but do not follow semantic versioning. In general, all changes endeavor to be non-breaking (by moving to new names rather than by breaking existing names). COMMITS is an ever-increasing counter of commits since the beginning of this repository.
 
-Latest release: 0.2.30
+Latest release: 1.0.39
 
 * [All released versions](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.clojure%22%20AND%20a%3A%22tools.deps.graph%22)
 
 [deps.edn](https://clojure.org/guides/deps_and_cli) dependency information:
 
 ```
-org.clojure/tools.deps.graph {:mvn/version "0.2.30"}
+org.clojure/tools.deps.graph {:mvn/version "1.0.39"}
 ```
 
 # Developer Information
