@@ -14,9 +14,7 @@
     [clojure.tools.cli :as cli]
     [clojure.tools.deps.alpha :as deps]
     [clojure.tools.deps.alpha.extensions :as ext]
-    [clojure.tools.deps.alpha.reader :as reader]
     [clojure.tools.deps.alpha.script.parse :as parse]
-    [clojure.tools.deps.alpha.script.make-classpath2 :as makecp]
     [clojure.tools.deps.alpha.util.session :as session]
     [clojure.tools.deps.alpha.util.io :as io :refer [printerrln]]
     [dorothy.core :as dot]
@@ -191,23 +189,16 @@
           (if (.exists tf)
             (output-trace (-> tf slurp edn/read-string :log) nil output trace-omit)
             (throw (ex-info (str "Trace file does not exist: " tracefile) {})))))
-      (let [project-dep-loc (jio/file (or deps "deps.edn"))]
-        (when (and deps (not (.exists project-dep-loc)))
-          (throw (ex-info (str "Deps file does not exist: " deps) {})))
-        (let [install-deps (reader/install-deps)
-              user-dep-loc (jio/file (reader/user-deps-location))
-              user-deps (when (.exists user-dep-loc) (reader/slurp-deps user-dep-loc))
-              project-deps (when (.exists project-dep-loc) (reader/slurp-deps project-dep-loc))
-              deps-map (->> [install-deps user-deps project-deps] (remove nil?) reader/merge-deps)]
-          (makecp/check-aliases deps-map aliases)
-          (let [deps-map' (if-let [replace-deps (get (deps/combine-aliases deps-map aliases) :deps)]
-                            (->> [install-deps user-deps project-deps {:deps replace-deps}] (remove nil?) reader/merge-deps)
-                            deps-map)
-                resolve-args (deps/combine-aliases deps-map' aliases)
-                lib-map (session/with-session (deps/resolve-deps deps-map' resolve-args {:trace trace}))]
-            (if trace
-              (output-trace (-> lib-map meta :trace :log) deps-map' output trace-omit)
-              (make-graph lib-map deps-map' output {:size size}))))))
+      (let [{:keys [root-edn user-edn project-edn]} (deps/find-edn-maps (or deps "deps.edn"))
+            master-edn (deps/merge-edns [root-edn user-edn project-edn])
+            combined-aliases (deps/combine-aliases master-edn aliases)
+            basis (session/with-session
+                    (deps/calc-basis master-edn {:resolve-args (merge combined-aliases {:trace true})
+                                                 :classpath-args combined-aliases}))
+            lib-map (:libs basis)]
+        (if trace
+          (output-trace (-> lib-map meta :trace :log) output basis trace-omit)
+          (make-graph lib-map basis output {:size size}))))
     (catch IOException e
       (if (str/starts-with? (.getMessage e) "Cannot run program")
         (throw (ex-info "tools.deps.graph requires Graphviz (https://graphviz.gitlab.io/download) to be installed to generate graphs." {} e))))))
