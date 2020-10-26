@@ -43,37 +43,37 @@ Options:
 Show dependency graph for current project:
 
 ```
-clj -A:graph
-```
-
-Show dependency graph for current project with jar sizes:
-
-```
-clj -A:graph -o deps.png
+clj -M:graph
 ```
 
 Save dependency graph to deps.png for current project:
 
 ```
-clj -A:graph -o deps.png --size
+clj -M:graph -o deps.png
+```
+
+Show dependency graph for current project with jar sizes:
+
+```
+clj -M:graph -o deps.png --size
 ```
 
 Read mydeps.edn, create deps graph, output image to mydeps.png:
 
 ```
-clj -A:graph -d mydeps.edn -o mydeps.png
+clj -M:graph -d mydeps.edn -o mydeps.png
 ```
 
 Read deps.edn, trace expansion, output steps as trace100.png, trace101.png, ... :
 
 ```
-clj -A:graph -t -o trace
+clj -M:graph -t -o trace
 ```
 
 Read mydeps.edn, trace expansion, output trace100.png, ... :
 
 ```
-clj -A:graph -d mydeps.edn -t -o trace
+clj -M:graph -d mydeps.edn -t -o trace
 ```
 
 Use -Strace to output a trace.edn file.
