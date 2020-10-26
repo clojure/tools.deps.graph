@@ -23,7 +23,7 @@ Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available i
 Run it in your current project:
 
 ```
-clj -A:graph <options>
+clj -M:graph <options>
 ```
 
 If no options are provided, tools.deps.graph will create a dependency graph for the current project and display it. Ctrl-C to quit.
