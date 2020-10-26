@@ -40,49 +40,49 @@ Options:
 
 # Examples
 
+Show dependency graph for current project:
+
 ```
 clj -A:graph
 ```
 
-Show dependency graph for current project
+Show dependency graph for current project with jar sizes:
 
 ```
 clj -A:graph -o deps.png
 ```
 
-Show dependency graph for current project with jar sizes
+Save dependency graph to deps.png for current project:
 
 ```
 clj -A:graph -o deps.png --size
 ```
 
-Save dependency graph to deps.png for current project
+Read mydeps.edn, create deps graph, output image to mydeps.png:
 
 ```
 clj -A:graph -d mydeps.edn -o mydeps.png
 ```
 
-Read mydeps.edn, create deps graph, output image to mydeps.png
+Read deps.edn, trace expansion, output steps as trace100.png, trace101.png, ... :
 
 ```
 clj -A:graph -t -o trace
 ```
 
-Read deps.edn, trace expansion, output steps as trace100.png, trace101.png, ...
+Read mydeps.edn, trace expansion, output trace100.png, ... :
 
 ```
 clj -A:graph -d mydeps.edn -t -o trace
 ```
 
-Read mydeps.edn, trace expansion, output trace100.png, ...
+Use -Strace to output a trace.edn file.
+Read trace.edn file, output trace100.png, ...
 
 ```
 clj -Strace
 clj -A:graph -f trace.edn -o trace
 ```
-
-Use -Strace to output a trace.edn file.
-Read trace.edn file, output trace100.png, ...
 
 # Release Information
 
