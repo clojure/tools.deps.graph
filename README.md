@@ -81,7 +81,7 @@ Read trace.edn file, output trace100.png, ...
 
 ```
 clj -Strace
-clj -A:graph -f trace.edn -o trace
+clj -M:graph -f trace.edn -o trace
 ```
 
 # Release Information
