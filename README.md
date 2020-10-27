@@ -18,7 +18,7 @@ Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available i
  :aliases
  {:graph {:replace-deps {org.clojure/tools.deps.graph {:mvn/version "1.0.56"}}
           :main-opts ["-m" "clojure.tools.deps.graph"] ;; deprecated
-          :default-ns clojure.tools.deps.graph}}}
+          :ns-default clojure.tools.deps.graph}}}
 ```
 
 tools.deps.graph supports both older clojure.main invocation (deprecated) and newer exec function invocation (clj -X).
