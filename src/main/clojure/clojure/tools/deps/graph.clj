@@ -49,7 +49,7 @@
    ["-d" "--deps DEPSFILE" "deps.edn file to read, default ./deps.edn" :default "deps.edn"]
    ;; trace mode
    ["-t" "--trace" "Trace mode, output one image per trace step"]
-   ["-f" "--tracefile TRACEFILE" "Read trace directly from file, output one image per trace step"]
+   ["-f" "--trace-file TRACEFILE" "Read trace directly from file, output one image per trace step"]
    ;; options
    ["-o" "--output FILE" "Save output file (or files if trace), don't show"]
    ["-a" "--aliases ALIASES" "Concatenated alias names to enable" :parse-fn parse/parse-kws]
@@ -179,16 +179,16 @@
             dot/dot
             (dotjvm/save! (str output i ".png") {:format :png})))))))
 
-(defn run
-  [{:keys [deps trace tracefile output aliases trace-omit size] :as opts}]
+(defn- run
+  [{:keys [deps trace trace-file output aliases trace-omit size] :as opts}]
   (try
-    (if tracefile
+    (if trace-file
       (do
-        (when-not output (throw (ex-info "-o must specify output file name in trace mode" nil)))
-        (let [tf (jio/file tracefile)]
+        (when-not output (throw (ex-info "Must specify output file name in trace mode" {})))
+        (let [tf (jio/file trace-file)]
           (if (.exists tf)
             (output-trace (-> tf slurp edn/read-string :log) nil output trace-omit)
-            (throw (ex-info (str "Trace file does not exist: " tracefile) {})))))
+            (throw (ex-info (str "Trace file does not exist: " trace-file) {})))))
       (let [{:keys [root-edn user-edn project-edn]} (deps/find-edn-maps (or deps "deps.edn"))
             master-edn (deps/merge-edns [root-edn user-edn project-edn])
             combined-aliases (deps/combine-aliases master-edn aliases)
@@ -203,6 +203,28 @@
       (if (str/starts-with? (.getMessage e) "Cannot run program")
         (throw (ex-info "tools.deps.graph requires Graphviz (https://graphviz.gitlab.io/download) to be installed to generate graphs." {} e))))))
 
+(defn graph
+  "Create deps graphs. By default reads deps.edn in current directory, creates deps graph,
+  and shows using a viewer. Use ctrl-c to exit.
+
+  Options:
+    :deps Path to deps file (default = \"./deps.edn\")
+    :trace Flag to use trace mode (default = false)
+    :trace-file Path to trace.edn file to read
+    :output Output file path
+    :trace-omit collection of lib symbols to omit in trace mode (default = nil)
+    :size Flag to include sizes in images (default = false)"
+  [opts]
+  (try
+    (run opts)
+    (catch Throwable t
+      (printerrln (.getMessage t))
+      (when-not (instance? IExceptionInfo t)
+        (.printStackTrace t))
+      (System/exit 1))
+    (finally
+      (shutdown-agents))))
+
 (defn -main
   "Create deps graphs. By default, reads deps.edn in current directory, creates deps graph,
   and shows using a viewer. Use ctrl-c to exit.
@@ -216,15 +238,8 @@
     --trace-omit - Comma-delimited list of libs to skip in trace images
     --size - Include jar size in dep graph nodes"
   [& args]
-  (try
-    (let [{:keys [options errors]} (parse-opts args)]
-      (when (seq errors)
-        (run! println errors)
-        (System/exit 1))
-      (run options)
-      (shutdown-agents))
-    (catch Throwable t
-      (printerrln (.getMessage t))
-      (when-not (instance? IExceptionInfo t)
-        (.printStackTrace t))
-      (System/exit 1))))
+  (let [{:keys [options errors]} (parse-opts args)]
+    (when (seq errors)
+      (run! println errors)
+      (System/exit 1))
+    (graph options)))
