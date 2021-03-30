@@ -1,0 +1,2 @@
+{:exec
+ {:ns-default clojure.tools.deps.graph}}
