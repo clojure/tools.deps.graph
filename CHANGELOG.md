@@ -1,6 +1,8 @@
 Changelog
 ===========
 
+* 1.0.63 on May 30, 2021
+  * Add tool usage info
 * 1.0.56 on Oct 27, 2020
   * Update to use latest tools.deps 0.9.833
   * Add docs and support for -X execution
