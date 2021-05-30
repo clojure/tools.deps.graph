@@ -4,4 +4,6 @@
   org.clojure/tools.cli {:mvn/version "1.0.194"}
   dorothy/dorothy {:mvn/version "0.0.7"}
   org.slf4j/slf4j-nop {:mvn/version "1.7.29"}}
+
+ :tools/usage {:ns-default clojure.tools.deps.graph}
 }
