@@ -32,12 +32,12 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.deps.alpha</artifactId>
-      <version>0.9.833</version>
+      <version>0.12.1090</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.cli</artifactId>
-      <version>1.0.194</version>
+      <version>1.0.206</version>
     </dependency>
     <dependency>
       <groupId>dorothy</groupId>
@@ -47,7 +47,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
-      <version>1.7.29</version>
+      <version>1.7.32</version>
     </dependency>
   </dependencies>
 

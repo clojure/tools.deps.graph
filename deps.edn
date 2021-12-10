@@ -1,9 +1,9 @@
 {:paths ["src/main/clojure"]
  :deps
- {org.clojure/tools.deps.alpha {:mvn/version "0.9.833"}
-  org.clojure/tools.cli {:mvn/version "1.0.194"}
+ {org.clojure/tools.deps.alpha {:mvn/version "0.12.1090"}
+  org.clojure/tools.cli {:mvn/version "1.0.206"}
   dorothy/dorothy {:mvn/version "0.0.7"}
-  org.slf4j/slf4j-nop {:mvn/version "1.7.29"}}
+  org.slf4j/slf4j-nop {:mvn/version "1.7.32"}}
 
  :tools/usage {:ns-default clojure.tools.deps.graph}
 }

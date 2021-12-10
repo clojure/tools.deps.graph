@@ -1,6 +1,8 @@
 Changelog
 ===========
 
+* next
+  * Bump to latest tools.deps.alpha and other deps
 * 1.0.63 on May 30, 2021
   * Add tool usage info
 * 1.0.56 on Oct 27, 2020
