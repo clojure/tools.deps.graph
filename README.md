@@ -11,33 +11,21 @@ tools.deps.graph uses [Graphviz](https://www.graphviz.org/) to generate images. 
 
 # Usage
 
-Add tools.deps.graph as an alias in your ~/.clojure/deps.edn so it's available in any project:
-
-```clojure
-{...
- :aliases
- {:graph {:replace-deps {org.clojure/tools.deps.graph {:mvn/version "1.1.68"}}
-          :main-opts ["-m" "clojure.tools.deps.graph"] ;; deprecated
-          :ns-default clojure.tools.deps.graph}}}
-```
-
-tools.deps.graph supports both older clojure.main invocation (deprecated) and newer exec function invocation (clj -X).
-
-To run with exec in your current project:
+Install tools.deps.graph as a Clojure CLI tool so it's available in any project:
 
 ```
-clj -X:graph graph <options>
+clj -Ttools install io.github.clojure/tools.deps.graph '{:git/tag "v1.1.76"}' :as graph
 ```
 
-Older clojure.main invocation in your current project (use -M for clj 1.10.1.697+, -A for older):
+To run the tool in your current project:
 
 ```
-clj -M:graph <options>
+clj -Tgraph graph <options>
 ```
 
 If no options are provided, tools.deps.graph will create a dependency graph for the current project and display it. Ctrl-C to quit.
 
-When using -X, options:
+When using -T or -X, options:
 
 * `:deps` - Path to deps file (default = "deps.edn")
 * `:trace` - Boolean flag to use trace mode (default = false)
@@ -61,37 +49,37 @@ Equivalent clojure.main options:
 Show dependency graph for current project:
 
 ```
-clj -X:graph graph
+clj -Tgraph graph
 ```
 
 Save dependency graph to deps.png for current project:
 
 ```
-clj -X:graph graph :output '"deps.png"'
+clj -Tgraph graph :output '"deps.png"'
 ```
 
 Show dependency graph for current project with jar sizes:
 
 ```
-clj -X:graph graph :output '"deps.png"' :size true
+clj -Tgraph graph :output '"deps.png"' :size true
 ```
 
 Read mydeps.edn, create deps graph, output image to mydeps.png:
 
 ```
-clj -X:graph graph :deps '"mydeps.edn"' :output '"mydeps.png"'
+clj -Tgraph graph :deps '"mydeps.edn"' :output '"mydeps.png"'
 ```
 
 Read deps.edn, trace expansion, output steps as trace100.png, trace101.png, ... :
 
 ```
-clj -X:graph graph :trace true :output '"trace"'
+clj -Tgraph graph :trace true :output '"trace"'
 ```
 
 Read mydeps.edn, trace expansion, output trace100.png, ... :
 
 ```
-clj -X:graph graph :deps '"mydeps.edn"' :trace true :output '"trace"'
+clj -Tgraph graph :deps '"mydeps.edn"' :trace true :output '"trace"'
 ```
 
 Use -Strace to output a trace.edn file.
@@ -99,21 +87,21 @@ Read trace.edn file, output trace100.png, ...
 
 ```
 clj -Strace
-clj -X:graph graph :trace-file '"trace.edn"' :output '"trace"'
+clj -Tgraph graph :trace-file '"trace.edn"' :output '"trace"'
 ```
 
 # Release Information
 
 This project follows the version scheme MAJOR.MINOR.COMMITS where MAJOR and MINOR provide some relative indication of the size of the change, but do not follow semantic versioning. In general, all changes endeavor to be non-breaking (by moving to new names rather than by breaking existing names). COMMITS is an ever-increasing counter of commits since the beginning of this repository.
 
-Latest release: 1.1.68
+Latest release: 1.1.76
 
 * [All released versions](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.clojure%22%20AND%20a%3A%22tools.deps.graph%22)
 
 [deps.edn](https://clojure.org/guides/deps_and_cli) dependency information:
 
 ```
-org.clojure/tools.deps.graph {:mvn/version "1.1.68"}
+org.clojure/tools.deps.graph {:mvn/version "1.1.76"}
 ```
 
 # Developer Information
@@ -126,7 +114,7 @@ org.clojure/tools.deps.graph {:mvn/version "1.1.68"}
 
 # Copyright and License
 
-Copyright © 2019-2022 Rich Hickey, Alex Miller, and contributors
+Copyright © 2019-2023 Rich Hickey, Alex Miller, and contributors
 
 All rights reserved. The use and
 distribution terms for this software are covered by the
