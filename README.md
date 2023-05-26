@@ -109,8 +109,7 @@ org.clojure/tools.deps.graph {:mvn/version "1.1.76"}
 * [GitHub project](https://github.com/clojure/tools.deps.graph)
 * [How to contribute](https://clojure.org/community/contributing)
 * [Bug Tracker](https://dev.clojure.org/jira/browse/TDEPS)
-* [Continuous Integration](https://build.clojure.org/job/tools.deps.graph/)
-* [Compatibility Test Matrix](https://build.clojure.org/job/tools.deps.graph-test-matrix/)
+* [Continuous Integration](https://github.com/clojure/tools.deps.graph/actions/workflows/test.yml)
 
 # Copyright and License
 
