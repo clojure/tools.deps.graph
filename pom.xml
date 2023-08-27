@@ -31,13 +31,13 @@
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
-      <artifactId>tools.deps.alpha</artifactId>
-      <version>0.12.1090</version>
+      <artifactId>tools.deps</artifactId>
+      <version>0.16.1264</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.cli</artifactId>
-      <version>1.0.206</version>
+      <version>1.0.214</version>
     </dependency>
     <dependency>
       <groupId>dorothy</groupId>

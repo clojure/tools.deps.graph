@@ -14,7 +14,7 @@ tools.deps.graph uses [Graphviz](https://www.graphviz.org/) to generate images. 
 Install tools.deps.graph as a Clojure CLI tool so it's available in any project:
 
 ```
-clj -Ttools install io.github.clojure/tools.deps.graph '{:git/tag "v1.1.76"}' :as graph
+clj -Ttools install io.github.clojure/tools.deps.graph '{:git/tag "v1.1.84"}' :as graph
 ```
 
 To run the tool in your current project:
