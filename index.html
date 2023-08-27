@@ -1,7 +1,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>graph - tools.deps.graph 1.1.82-SNAPSHOT API documentation</title>
+    <title>graph - tools.deps.graph 1.1.85-SNAPSHOT API documentation</title>
     <link rel="icon" href="static/favicon.png" />
     <link rel="shortcut icon" href="static/favicon.png" />
     <link rel="stylesheet" href="static/clojure.css" type="text/css" media="all" />
@@ -25,7 +25,7 @@ namespace.
       <div id="leftcolumn"><div style="text-align: center;"></div>
 <div class="menu">
   <div class="WikiCustomNav WikiElement wiki">
-    <span class="toc-header"><span id="project-name">tools.deps.graph</span> <span id="version">1.1.82-SNAPSHOT</span> API</span><br />
+    <span class="toc-header"><span id="project-name">tools.deps.graph</span> <span id="version">1.1.85-SNAPSHOT</span> API</span><br />
     <ul>
       <li><a href="index.html" class="wiki_link">Overview</a></li>
       <li><a href="api-index.html" class="wiki_link">API Index</a></li>
@@ -52,8 +52,20 @@ namespace.
     <a style="margin-top: 3px;" href="#"></a>
     
   </div><div class="toc-section" style="margin-left: 1em;">
-    <a style="margin-top: 3px;" href="#"></a>
-    
+    <a style="margin-top: 3px;" href="#var-section">Vars and Functions</a>
+    <div class="toc-entry" style="margin-left: 1em;">
+      <a href="#clojure.tools.deps.graph/-main" class="toc-entry-anchor">-main</a>
+      
+    </div><div class="toc-entry" style="margin-left: 1em;">
+      <a href="#clojure.tools.deps.graph/graph" class="toc-entry-anchor">graph</a>
+      
+    </div><div class="toc-entry" style="margin-left: 1em;">
+      <a href="#clojure.tools.deps.graph/parse-opts" class="toc-entry-anchor">parse-opts</a>
+      
+    </div><div class="toc-entry" style="margin-left: 1em;">
+      <a href="#clojure.tools.deps.graph/parse-syms" class="toc-entry-anchor">parse-syms</a>
+      
+    </div>
   </div><div class="toc-section" style="margin-left: 1em;">
     <a style="margin-top: 3px;" href="#"></a>
     
@@ -61,7 +73,7 @@ namespace.
 </div>
 </div>
                 <div id="content-tag"><h1 id="overview">API for <span id="graph">graph</span>
-  - <span id="header-project">tools.deps.graph</span> <span id="header-version">1.1.82-SNAPSHOT</span><span id="header-status-block"> (<span id="header-status">in development</span>)</span>
+  - <span id="header-project">tools.deps.graph</span> <span id="header-version">1.1.85-SNAPSHOT</span><span id="header-status-block"> (<span id="header-status">in development</span>)</span>
   </h1>
 
 <br />Full namespace name: <span id="long-name">clojure.tools.deps.graph</span>
@@ -75,7 +87,80 @@ namespace.
 
 
 
+<div id="var-section">
+  <p></p>
+  <h2>Public Variables and Functions</h2>
+  <div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.tools.deps.graph/-main">-main</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (-main &amp; args)
+</pre>
+    <pre id="var-docstr">Create deps graphs. By default, reads deps.edn in current directory, creates deps graph,
+and shows using a viewer. Use ctrl-c to exit.
 
+Options:
+  -d DEPSFILE - deps.edn file to read, default=deps.edn
+  -t - Trace mode, will output one image per expansion step
+  -f TRACEFILE - Trace file mode - read trace file, don't use deps.edn file
+  -o FILE - Output file, in trace mode required and will create N images
+  -a - Concatenated alias names when reading deps file
+  --trace-omit - Comma-delimited list of libs to skip in trace images
+  --size - Include jar size in dep graph nodes</pre>
+    <pre id="var-specs"></pre>
+    
+    
+    <a id="var-source" href="https://github.com/clojure/tools.deps.graph/blob/ea6c8b9b6c1d83f6d3bf0dfb88028e7e9688a85d/src/main/clojure/clojure/tools/deps/graph.clj#L228">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.tools.deps.graph/graph">graph</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (graph opts)
+</pre>
+    <pre id="var-docstr">Create deps graphs. By default reads deps.edn in current directory, creates deps graph,
+and shows using a viewer. Use ctrl-c to exit.
+
+Options:
+  :deps Path to deps file (default = "./deps.edn")
+  :trace Flag to use trace mode (default = false)
+  :trace-file Path to trace.edn file to read
+  :output Output file path
+  :trace-omit collection of lib symbols to omit in trace mode (default = nil)
+  :size Flag to include sizes in images (default = false)</pre>
+    <pre id="var-specs"></pre>
+    
+    
+    <a id="var-source" href="https://github.com/clojure/tools.deps.graph/blob/ea6c8b9b6c1d83f6d3bf0dfb88028e7e9688a85d/src/main/clojure/clojure/tools/deps/graph.clj#L206">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.tools.deps.graph/parse-opts">parse-opts</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (parse-opts args)
+</pre>
+    <pre id="var-docstr">Parse the command line opts to make-classpath</pre>
+    <pre id="var-specs"></pre>
+    
+    
+    <a id="var-source" href="https://github.com/clojure/tools.deps.graph/blob/ea6c8b9b6c1d83f6d3bf0dfb88028e7e9688a85d/src/main/clojure/clojure/tools/deps/graph.clj#L61">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.tools.deps.graph/parse-syms">parse-syms</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (parse-syms s)
+</pre>
+    <pre id="var-docstr">Parses a concatenated string of libs into a collection of symbols
+Ex: (parse-libs "org.clojure/clojure,org.clojure/test.check")
+Returns: [org.clojure/clojure org.clojure/test.check]</pre>
+    <pre id="var-specs"></pre>
+    
+    
+    <a id="var-source" href="https://github.com/clojure/tools.deps.graph/blob/ea6c8b9b6c1d83f6d3bf0dfb88028e7e9688a85d/src/main/clojure/clojure/tools/deps/graph.clj#L29">Source</a>
+  </div>
+</div>
 
 
 </div>
