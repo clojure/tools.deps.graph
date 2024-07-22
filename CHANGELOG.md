@@ -1,7 +1,7 @@
 Changelog
 ===========
 
-* next
+* 1.1.90 on Jul 22, 2024
   * Update deps
 * 1.1.76 on Dec 12, 2022
   * Update to tools.deps and other deps
