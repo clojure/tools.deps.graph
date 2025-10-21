@@ -3,6 +3,7 @@
   <artifactId>tools.deps.graph</artifactId>
   <version>1.1.91-SNAPSHOT</version>
   <name>tools.deps.graph</name>
+  <description>Dependency graphs for Clojure deps.edn projects.</description>
 
   <parent>
     <groupId>org.clojure</groupId>
