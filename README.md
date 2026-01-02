@@ -113,7 +113,7 @@ org.clojure/tools.deps.graph {:mvn/version "1.1.90"}
 
 # Copyright and License
 
-Copyright © 2019-2023 Rich Hickey, Alex Miller, and contributors
+Copyright © Rich Hickey, Alex Miller, and contributors
 
 All rights reserved. The use and
 distribution terms for this software are covered by the
